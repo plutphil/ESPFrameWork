@@ -14,5 +14,5 @@ This is a framework for esp32 and esp8266 wifi microcontrollers.
 - doesn't need javascript, but can serve a js client webapp
 - MQTT (ArduinoHA/ HomeassistantMQTT) 
 # Backlog
-- WebApp
-- CSS
+- All in one WebApp client
+- CSS styling

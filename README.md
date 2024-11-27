@@ -1,5 +1,5 @@
-# ESP8266FrameWork
-This is a collection of Code for the ESP8266.
+# ESPFrameWork
+This is a framework for esp32 and esp8266 wifi microcontrollers.
 ## Features
 - Fallback WiFi Access Point with
 - Captive Portal

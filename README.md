@@ -12,7 +12,7 @@ This is a collection of Code for the ESP8266.
 - Async DNS Server (for captive portal)
 - HTML generator helper functions
 - doesn't need javascript, but can serve a js client webapp
-## Backlog
-- MQTT
+- MQTT (ArduinoHA/ HomeassistantMQTT) 
+# Backlog
 - WebApp
 - CSS

@@ -1,0 +1,6 @@
+[
+    { "x": 10, "y": 10, "w": 100, "h": 50, "text": "Kitchen", "entity": "light.kitchen" },
+    { "x": 120, "y": 10, "w": 100, "h": 50, "text": "Living Room", "entity": "light.living_room" },
+    { "x": 230, "y": 10, "w": 100, "h": 50, "text": "Bedroom", "entity": "light.bedroom" }
+  ]
+  

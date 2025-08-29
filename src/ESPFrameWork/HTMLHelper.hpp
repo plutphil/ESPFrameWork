@@ -28,6 +28,23 @@ String urlencode(String str)
     return encodedString;
     
 }
+String htmlEscape(const String &s) {
+  String out;
+  out.reserve(s.length()); // reserve some space to reduce reallocations
+  for (size_t i = 0; i < s.length(); i++) {
+    char c = s[i];
+    switch (c) {
+      case '&': out += F("&amp;"); break;
+      case '<': out += F("&lt;");  break;
+      case '>': out += F("&gt;");  break;
+      case '"': out += F("&quot;"); break;
+      case '\'': out += F("&#39;"); break; // single quote
+      default: out += c; break;
+    }
+  }
+  return out;
+}
+
 String htmstr(const String& s){
   return "\""+s+"\"";
 }

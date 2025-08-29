@@ -1,6 +1,8 @@
-void registerFileEditor() {
-  //delete/remove file
-  server.on("/d", HTTP_GET, [](AsyncWebServerRequest * request) {
+void registerFileEditor()
+{
+  // delete/remove file
+  server.on("/d", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     if (!checkUserWebAuth(request)) return;
     if (!request->hasParam("p")) {
       senderrmesg(request, "Missing Parameter p");
@@ -12,11 +14,11 @@ void registerFileEditor() {
       return;
     }
     LittleFS.remove(path);
-    sendmesg(request, "Success");
-  });
+    sendmesg(request, "Success"); });
 
-  //rename file
-  server.on("/n", HTTP_GET, [](AsyncWebServerRequest * request) {
+  // rename file
+  server.on("/n", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     if (!checkUserWebAuth(request)) return;
     if (!request->hasParam("o")) {
       senderrmesg(request, "no (o)ld param");
@@ -37,14 +39,14 @@ void registerFileEditor() {
       return;
     }
     LittleFS.rename(oldpath, newpath);
-    sendmesg(request, "success");
-  });
+    sendmesg(request, "success"); });
 
-  //list dir TODO subfolders
-  server.on("/l", HTTP_GET, [](AsyncWebServerRequest * request) {
+  // list dir TODO subfolders
+  server.on("/l", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     if (!checkUserWebAuth(request)) return;
     AsyncResponseStream *response = request->beginResponseStream("text/plain");
-    #ifdef ESP8266
+#ifdef ESP8266
     auto root = LittleFS.openDir("/");
 
     while (root.next()) {
@@ -52,13 +54,11 @@ void registerFileEditor() {
       response->print(",");
       response->println(root.fileSize());
     }
-    #endif
-    request->send(response);
-  });
+#endif
+    request->send(response); });
 
-
-  
-  server.on("/rm", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/rm", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     if (!checkUserWebAuth(request)) return;
     if (!request->hasParam("p")) {
       senderrmesg(request, "Missing Parameter p","/ls");
@@ -76,16 +76,15 @@ void registerFileEditor() {
       return;
     }
     LittleFS.remove(path);
-    sendmesg(request, "Success","/ls");
-  });
-  
-  //list dir TODO subfolders
-  server.on("/ls", HTTP_GET, [](AsyncWebServerRequest * request) {
+    sendmesg(request, "Success","/ls"); });
+
+  // list dir TODO subfolders
+  server.on("/ls", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     if (!checkUserWebAuth(request)) return;
     AsyncResponseStream *response = request->beginResponseStream("text/html");
 
     response->print("<form method='POST' action='/u' enctype='multipart/form-data'><input type='file' name='f'><br><input type='submit' value='Upload'><br></form>");
-
 
     /*
     struct FSInfo {
@@ -98,7 +97,7 @@ void registerFileEditor() {
 };
 
     */
-   #ifdef ESP8266
+#ifdef ESP8266
     FSInfo fs_info;
     LittleFS.info(fs_info);
     response->print(innertag("p","using "+String(fs_info.usedBytes)+" / "+String(fs_info.totalBytes)+" bytes "+String(fs_info.usedBytes*100.f/(float)fs_info.totalBytes)+" %"));
@@ -115,21 +114,107 @@ void registerFileEditor() {
         +closetag("tr"));
     }
     response->print(closetag("table"));
-  #endif
-    #ifdef ESP32
-    auto root = LittleFS.open("/");
-    #endif
+#endif
+#ifdef ESP32
+  File root = LittleFS.open("/");
+
+      // ESP32 filesystem info
+    size_t totalBytes = LittleFS.totalBytes();
+    size_t usedBytes = LittleFS.usedBytes();
+    response->print(innertag("p","using "+String(usedBytes)+" / "+String(totalBytes)+" bytes "
+        +String(usedBytes*100.f/(float)totalBytes)+" %"));
+
+    response->print(opentag("table"));
+    File file = root.openNextFile();
+    while (file) {
+      String name = String(file.name());
+      response->print(
+        opentag("tr")
+        +td(ahref(name,name))
+        +td(String(file.size()))
+        +td(ahref("/rm?p="+urlencode(name),"X"))
+        +td(ahref("/n?o="+urlencode(name)+"&n=","N"))
+        +td(ahref("/e?p="+urlencode(name),"Edit"))
+        +closetag("tr"));
+      file = root.openNextFile();
+    }
+    response->print(closetag("table"));
+
+#endif
     
     
     response->print(ahref("/","Back"));
-    request->send(response);
-  });
-  
-  //upload file
-  server.on("/u", HTTP_POST, [](AsyncWebServerRequest * request) {
+    request->send(response); });
+  // edit file form + save
+  server.on("/e", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+  if (!checkUserWebAuth(request)) return;
+  if (!request->hasParam("p")) {
+    senderrmesg(request, "Missing Parameter p","/ls");
+    return;
+  }
+
+  String path = "/"+request->getParam("p")->value();
+  if (!LittleFS.exists(path)) {
+    senderrmesg(request, "File does not exist","/ls");
+    return;
+  }
+
+  File file = LittleFS.open(path, "r");
+  if (!file) {
+    senderrmesg(request, "Could not open file","/ls");
+    return;
+  }
+
+  String content;
+  while (file.available()) {
+    content += (char)file.read();
+  }
+  file.close();
+
+  AsyncResponseStream *response = request->beginResponseStream("text/html");
+  response->print("<h2>Editing: " + path + "</h2>");
+  response->print("<form method='POST' action='/e?p=" + path + "'>");
+  response->print("<textarea name='data' rows='25' cols='100'>");
+  response->print(htmlEscape(content)); // escape HTML special chars
+  response->print("</textarea><br>");
+  response->print("<input type='submit' value='Save'>");
+  response->print("</form>");
+  response->print(ahref("/ls","Back"));
+  request->send(response); });
+
+  server.on("/e", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
+  if (!checkUserWebAuth(request)) return;
+  if (!request->hasParam("p")) {
+    senderrmesg(request, "Missing Parameter p","/ls");
+    return;
+  }
+  if (!request->hasParam("data", true)) { // true → body param
+    senderrmesg(request, "Missing form data","/ls");
+    return;
+  }
+
+  String path = "/"+request->getParam("p")->value();
+  String data = request->getParam("data", true)->value();
+
+  File file = LittleFS.open(path, "w");
+  if (!file) {
+    senderrmesg(request, "Failed to open file for writing","/ls");
+    return;
+  }
+  file.print(data);
+  file.close();
+
+  sendmesg(request, "File saved","/ls"); 
+  reload();
+});
+  // upload file
+  server.on("/u", HTTP_POST, [](AsyncWebServerRequest *request)
+            {
     if (!checkUserWebAuth(request)) return;
-    request->send(200);
-  }, [](AsyncWebServerRequest * request, const String & filename, size_t index, uint8_t *data, size_t len, bool final) {
+    request->send(200); }, [](AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final)
+            {
     if (!checkUserWebAuth(request)) return;
     logdbg("Client:" + request->client()->remoteIP().toString() + " " + request->url());
     
@@ -158,7 +243,5 @@ void registerFileEditor() {
       request->_tempFile.close();
       request->redirect("/");
       logdbg("Upload Complete: " + String(filename) + ",size: " + String(index + len));
-    }
-  });
-
+    } });
 }

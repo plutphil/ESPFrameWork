@@ -21,7 +21,7 @@ void loadSwitchButtons() {
     Serial.println("Failed to parse JSON");
     return;
   }
-
+  switchbuttons.clear();
   for (JsonObject obj : doc.as<JsonArray>()) {
     int x = obj["x"] | 0;
     int y = obj["y"] | 0;

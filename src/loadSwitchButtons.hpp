@@ -29,7 +29,12 @@ void loadSwitchButtons() {
     int h = obj["h"] | 50;
     String text = obj["text"] | "Unknown";
     String entity = obj["entity"] | "";
-    switchbuttons.push_back(SwitchButton(x,y,w,h,text,entity));
+    String onstate = obj["onstate"] | "ON";
+    String offstate = obj["offstate"] | "OFF";
+    auto swb = SwitchButton(x, y, w, h, text, entity);
+    swb.onstate = onstate;
+    swb.offstate = offstate;
+    switchbuttons.push_back(swb);
     printf("Loaded button: %s at (%d, %d, %d, %d) for entity %s\n", text.c_str(), x, y, w, h, entity.c_str());
   }
   file.close();

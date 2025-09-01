@@ -5,6 +5,8 @@ public:
   bool state=false;
   String text="Kitchen";
   String entity="";
+  String onstate = "ON";
+  String offstate = "OFF";
   SwitchButton(){}
 
   SwitchButton(int x, int y, int w, int h, String text_, String entity_)

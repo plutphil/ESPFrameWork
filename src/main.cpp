@@ -222,7 +222,9 @@ void loop() {
         if( swb.r.isIn(x,y)){
           swb.state ^= 1;
           swb.draw();
-          mqttclient.publish(swb.entity.c_str(),swb.state?"ON":"OFF");
+          mqttclient.publish(swb.entity.c_str(),
+          swb.state?swb.onstate.c_str():swb.offstate.c_str());
+          delay(500);
         }
       }
     }

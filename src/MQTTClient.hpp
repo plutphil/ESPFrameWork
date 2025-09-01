@@ -39,7 +39,7 @@ void callback(char *topic_, byte *payload_, unsigned int length)
     // Example: update local switchbutton state if topic matches entity
     for (auto &swb : switchbuttons) {
         if (topic == swb.entity) {
-        swb.state = (payload == "ON");
+        swb.state = (payload ==swb.onstate);
         swb.draw();
         }
     }
